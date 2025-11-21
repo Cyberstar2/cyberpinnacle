@@ -48,7 +48,7 @@ export default function CyberAI() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/ai", {
+      const res = await axios.post("https://cyberpinnacle-backend.onrender.com/ai", {
         prompt: userMsg.text,
       });
 
@@ -86,7 +86,6 @@ export default function CyberAI() {
         </p>
       </header>
 
-      {/* Chat box */}
       <div
         ref={chatRef}
         className="flex-1 bg-gray-900 border border-green-700 rounded-xl p-4 overflow-y-auto space-y-3"
@@ -114,7 +113,6 @@ export default function CyberAI() {
         )}
       </div>
 
-      {/* Input */}
       <div className="mt-3 flex gap-3">
         <input
           className="flex-grow px-4 py-3 bg-transparent border border-green-500 rounded-lg outline-none text-green-300"
