@@ -11,6 +11,8 @@ import Projects from "./pages/Projects";
 import Contact from "./pages/Contact";
 import Team from "./pages/Team";
 import AdminLogs from "./pages/AdminLogs";
+import AdminDashboard from "./pages/AdminDashboard";
+
 
 // Articles / Blog
 import Articles from "./pages/Articles";
@@ -131,6 +133,11 @@ function App() {
             <Route path="/list-courses" element={<ListCourses />} />
             <Route path="/training-paths" element={<TrainingPaths />} />
             <Route path="/compare-packages" element={<ComparePackages />} />
+
+
+            <Route path="/admin" element={<AdminDashboard />} />
+<Route path="/admin/logs" element={<AdminLogs />} />
+
 
           </Routes>
         </div>

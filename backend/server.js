@@ -20,15 +20,22 @@ app.use(
 );
 app.use(express.json({ limit: "2mb" }));
 
-// In-memory chat logs
+// In-memory logs & stats (simple for now)
 const chatLogs = [];
+const reconLogs = [];
+const stats = {
+  totalChats: 0,
+  totalReconIP: 0,
+  totalReconDNS: 0,
+  totalReconWHOIS: 0,
+  totalReconSubdomains: 0,
+};
 
-// Groq client
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// Simple health check (so / doesn't show "Cannot GET /")
+// Health check
 app.get("/", (req, res) => {
   res.send("CyberPinnacle AI Backend Running");
 });
@@ -63,13 +70,16 @@ ${prompt}
       completion.choices[0]?.message?.content ||
       "I could not generate a response.";
 
-    chatLogs.push({
+    const entry = {
       id: Date.now(),
       prompt,
       fileAttached: !!fileContent,
       response: aiText,
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    chatLogs.push(entry);
+    stats.totalChats += 1;
 
     return res.json({ response: aiText });
   } catch (err) {
@@ -85,7 +95,7 @@ app.get("/ai/logs", (req, res) => {
 
 // ========== RECON TOOLS ENDPOINTS ==========
 
-// 1) IP Info: uses ipwho.is
+// 1) IP Info
 app.post("/recon/ip-info", async (req, res) => {
   try {
     const { target } = req.body;
@@ -98,6 +108,14 @@ app.post("/recon/ip-info", async (req, res) => {
       return res.status(400).json({ error: "Unable to fetch IP info" });
     }
 
+    reconLogs.push({
+      id: Date.now(),
+      type: "ip-info",
+      input: target,
+      timestamp: new Date().toISOString(),
+    });
+    stats.totalReconIP += 1;
+
     return res.json({ result: data });
   } catch (err) {
     console.error("IP Info Error:", err);
@@ -105,7 +123,7 @@ app.post("/recon/ip-info", async (req, res) => {
   }
 });
 
-// 2) DNS Lookup: uses Google DNS
+// 2) DNS Lookup
 app.post("/recon/dns-lookup", async (req, res) => {
   try {
     const { domain } = req.body;
@@ -122,6 +140,14 @@ app.post("/recon/dns-lookup", async (req, res) => {
         .json({ error: "DNS lookup failed or no records found" });
     }
 
+    reconLogs.push({
+      id: Date.now(),
+      type: "dns-lookup",
+      input: domain,
+      timestamp: new Date().toISOString(),
+    });
+    stats.totalReconDNS += 1;
+
     return res.json({ result: data });
   } catch (err) {
     console.error("DNS Lookup Error:", err);
@@ -129,7 +155,7 @@ app.post("/recon/dns-lookup", async (req, res) => {
   }
 });
 
-// 3) WHOIS via RDAP (no key)
+// 3) WHOIS / RDAP
 app.post("/recon/whois", async (req, res) => {
   try {
     const { domain } = req.body;
@@ -142,6 +168,15 @@ app.post("/recon/whois", async (req, res) => {
       return res.status(400).json({ error: "WHOIS/RDAP lookup failed" });
     }
     const data = await resp.json();
+
+    reconLogs.push({
+      id: Date.now(),
+      type: "whois",
+      input: domain,
+      timestamp: new Date().toISOString(),
+    });
+    stats.totalReconWHOIS += 1;
+
     return res.json({ result: data });
   } catch (err) {
     console.error("WHOIS Error:", err);
@@ -149,7 +184,7 @@ app.post("/recon/whois", async (req, res) => {
   }
 });
 
-// 4) Subdomain Recon (AI-assisted, not real scan)
+// 4) Subdomains (AI-assisted)
 app.post("/recon/subdomains-ai", async (req, res) => {
   try {
     const { domain } = req.body;
@@ -176,6 +211,14 @@ Return answer in a clean, readable format.
       completion.choices[0]?.message?.content ||
       "Could not generate subdomain recon plan.";
 
+    reconLogs.push({
+      id: Date.now(),
+      type: "subdomains-ai",
+      input: domain,
+      timestamp: new Date().toISOString(),
+    });
+    stats.totalReconSubdomains += 1;
+
     return res.json({ result: text });
   } catch (err) {
     console.error("Subdomains AI Error:", err);
@@ -183,7 +226,17 @@ Return answer in a clean, readable format.
   }
 });
 
-// ===========================================
+// ========= ADMIN STATS ENDPOINT =========
+app.get("/admin/stats", (req, res) => {
+  const lastChat = chatLogs.length ? chatLogs[chatLogs.length - 1] : null;
+  const lastRecon = reconLogs.length ? reconLogs[reconLogs.length - 1] : null;
+
+  res.json({
+    stats,
+    lastChat,
+    lastRecon,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
