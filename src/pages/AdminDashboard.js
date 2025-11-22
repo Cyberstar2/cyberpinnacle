@@ -45,18 +45,31 @@ export default function AdminDashboard() {
   if (!stats) return <p className="text-center text-green-400">Loading...</p>;
 
   const pieData = {
-    labels: ["Critical", "Warning", "Info"],
-    datasets: [
-      {
-        data: [
-          stats.threatCounts.CRITICAL,
-          stats.threatCounts.WARNING,
-          stats.threatCounts.INFO,
-        ],
-        backgroundColor: ["#f87171", "#facc15", "#4ade80"],
-      },
-    ],
-  };
+  labels: ["Critical", "Warning", "Info"],
+  datasets: [
+    {
+      data: [
+        stats?.threatCounts?.CRITICAL || 0,
+        stats?.threatCounts?.WARNING || 0,
+        stats?.threatCounts?.INFO || 0,
+      ],
+      backgroundColor: ["#f87171", "#facc15", "#4ade80"],
+    },
+  ],
+};
+
+const timelineData = {
+  labels: stats?.timeline?.map((t) => t.date) || [],
+  datasets: [
+    {
+      label: "Cases per Day",
+      data: stats?.timeline?.map((t) => t.count) || [],
+      borderWidth: 2,
+    },
+  ],
+};
+
+    
 
   const timelineData = {
     labels: stats.timeline.map((t) => t.date),
