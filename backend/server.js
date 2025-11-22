@@ -23,12 +23,15 @@ app.use(express.json({ limit: "2mb" }));
 // In-memory logs & stats (simple for now)
 const chatLogs = [];
 const reconLogs = [];
+const forensicsLogs = [];
+
 const stats = {
   totalChats: 0,
   totalReconIP: 0,
   totalReconDNS: 0,
   totalReconWHOIS: 0,
   totalReconSubdomains: 0,
+  totalForensicsAnalyses: 0,
 };
 
 const client = new Groq({
@@ -226,15 +229,106 @@ Return answer in a clean, readable format.
   }
 });
 
+// ========= FORENSICS ANALYSIS ENDPOINT =========
+app.post("/forensics/analyze", async (req, res) => {
+  try {
+    const { filename, mimeType, size, contentPreview } = req.body;
+
+    if (!filename || !contentPreview) {
+      return res
+        .status(400)
+        .json({ error: "Missing file name or content preview" });
+    }
+
+    const prompt = `
+You are a digital forensics and incident response analyst.
+
+You are given a file with the following metadata:
+- File name: ${filename}
+- MIME type: ${mimeType || "unknown"}
+- Size (bytes): ${size || "unknown"}
+
+Below is a truncated preview of the file content (it may be partial or text-extracted):
+
+---------------- FILE CONTENT PREVIEW START ----------------
+${contentPreview}
+---------------- FILE CONTENT PREVIEW END ----------------
+
+TASKS:
+1. Briefly classify the situation into one of these: INFO, WARNING, or CRITICAL, based on what you can infer.
+2. Provide a concise forensic summary:
+   - What does this file appear to contain?
+   - Any suspicious indicators or behaviour patterns?
+3. Extract and list any potential indicators of compromise (IOCs) you see:
+   - IP addresses
+   - Domains / hostnames
+   - Email addresses
+   - File hashes (if visible)
+   - URLs
+4. Suggest next forensic steps (e.g. deeper PCAP analysis, log correlation, sandboxing, timeline analysis).
+
+IMPORTANT OUTPUT FORMAT:
+- First line MUST be exactly: THREAT_LEVEL: INFO or THREAT_LEVEL: WARNING or THREAT_LEVEL: CRITICAL
+- After that, provide a clear multi-line explanation and lists in human-readable text.
+    `.trim();
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+    });
+
+    const fullText =
+      completion.choices[0]?.message?.content ||
+      "No analysis could be generated.";
+
+    // Parse threat level from first line
+    const lines = fullText.split("\n");
+    let threatLevel = "INFO";
+    if (lines.length > 0) {
+      const m = lines[0].match(/THREAT_LEVEL:\s*(CRITICAL|WARNING|INFO)/i);
+      if (m) {
+        threatLevel = m[1].toUpperCase();
+      }
+    }
+    const analysis = lines.slice(1).join("\n").trim();
+
+    const entry = {
+      id: Date.now(),
+      filename,
+      mimeType,
+      size,
+      threatLevel,
+      timestamp: new Date().toISOString(),
+    };
+    forensicsLogs.push(entry);
+    stats.totalForensicsAnalyses += 1;
+
+    return res.json({
+      threatLevel,
+      analysis,
+      raw: fullText,
+      meta: { filename, mimeType, size },
+    });
+  } catch (err) {
+    console.error("Forensics Error:", err);
+    return res.status(500).json({ error: "Forensics analysis failed" });
+  }
+});
+
 // ========= ADMIN STATS ENDPOINT =========
 app.get("/admin/stats", (req, res) => {
   const lastChat = chatLogs.length ? chatLogs[chatLogs.length - 1] : null;
   const lastRecon = reconLogs.length ? reconLogs[reconLogs.length - 1] : null;
+  const lastForensics = forensicsLogs.length
+    ? forensicsLogs[forensicsLogs.length - 1]
+    : null;
 
   res.json({
     stats,
     lastChat,
     lastRecon,
+    lastForensics,
   });
 });
 
