@@ -12,6 +12,8 @@ import Contact from "./pages/Contact";
 import Team from "./pages/Team";
 import AdminLogs from "./pages/AdminLogs";
 import AdminDashboard from "./pages/AdminDashboard";
+import SOCMonitor from "./pages/admin/SOCMonitor";
+
 
 // Articles / Blog
 import Articles from "./pages/Articles";
@@ -77,11 +79,13 @@ function App() {
               <Route path="lab" element={<AttackLab />} />
               <Route path="forensics" element={<ForensicsLab />} />
               <Route path="reports" element={<Reports />} />
+              
             </Route>
 
             {/* Admin */}
             <Route path="/admin/logs" element={<AdminLogs />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/soc" element={<SOCMonitor />} />
 
             {/* CTF */}
             <Route path="/ctf" element={<CTF />} />
