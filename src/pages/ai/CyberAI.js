@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
+// Automatically switch between local server & deployed backend
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://cyberpinnacle-backend.onrender.com"
+    : "http://localhost:5000";
+
 export default function CyberAI() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -48,7 +54,7 @@ export default function CyberAI() {
     setLoading(true);
 
     try {
-      const res = await axios.post("https://cyberpinnacle-backend.onrender.com/ai", {
+      const res = await axios.post(`${API_BASE}/ai`, {
         prompt: userMsg.text,
       });
 
@@ -77,12 +83,9 @@ export default function CyberAI() {
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
       <header className="mb-4">
-        <h1 className="text-2xl font-bold text-green-400">
-          AI Assistant
-        </h1>
+        <h1 className="text-2xl font-bold text-green-400">AI Assistant</h1>
         <p className="text-sm text-green-500">
-          Chat with CyberPinnacle AI about exploits, networking, pentesting,
-          bug bounty, forensics & more.
+          Chat with CyberPinnacle AI about exploits, networking, pentesting, bug bounty, forensics & more.
         </p>
       </header>
 
@@ -100,16 +103,12 @@ export default function CyberAI() {
             }`}
           >
             <p className="whitespace-pre-wrap">{msg.text}</p>
-            <p className="text-[10px] opacity-70 text-right mt-1">
-              {msg.time}
-            </p>
+            <p className="text-[10px] opacity-70 text-right mt-1">{msg.time}</p>
           </div>
         ))}
 
         {loading && (
-          <div className="text-green-500 text-sm animate-pulse">
-            AI is typing…
-          </div>
+          <div className="text-green-500 text-sm animate-pulse">AI is typing…</div>
         )}
       </div>
 
