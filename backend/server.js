@@ -1,4 +1,3 @@
-// sayfullah
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -20,9 +19,27 @@ app.use(
     methods: ["GET", "POST"],
   })
 );
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "5mb" }));
 
-// In-memory logs & stats
+// WebSocket setup
+const wss = new WebSocketServer({ noServer: true });
+
+const broadcast = (event) => {
+  const json = JSON.stringify(event);
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) client.send(json);
+  });
+
+  console.log("🔥 SOC Event:", event);
+};
+
+// function to standardize events
+const logEvent = (type, message) => {
+  const event = { type, message, timestamp: new Date().toISOString() };
+  broadcast(event);
+};
+
+// MEMORY LOGS
 const chatLogs = [];
 const reconLogs = [];
 const forensicsLogs = [];
@@ -36,199 +53,58 @@ const stats = {
   totalForensicsAnalyses: 0,
 };
 
-const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// --- WEBSOCKET SERVER (Real-Time SOC Monitor) ---
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () =>
-  console.log(`AI & SOC Server running on port ${PORT}`)
-);
-
-const wss = new WebSocketServer({ server, path: "/stream" });
-
-
-function broadcastEvent(event) {
-  const message = JSON.stringify(event);
-  wss.clients.forEach((client) => {
-    try {
-      client.send(message);
-    } catch (err) {
-      console.error("WS Send Error:", err);
-    }
-  });
-}
-
-wss.on("connection", () => {
-  console.log("📡 Admin SOC connected");
-});
-
-function logEvent(type, message, meta = {}) {
-  const event = {
-    type,
-    message,
-    meta,
-    timestamp: Date.now(),
-  };
-  broadcastEvent(event);
-  console.log("SOC Event:", event);
-}
-
-// Root health-check
+// Root test
 app.get("/", (req, res) => {
-  res.send("CyberPinnacle AI Backend Running - WebSocket Online");
+  res.send("CyberPinnacle AI Backend Running");
 });
 
-// ===== MAIN AI CHAT ENDPOINT =====
+// AI Chat endpoint
 app.post("/ai", async (req, res) => {
   try {
-    const { prompt, fileContent } = req.body;
-    logEvent("ai", `AI Question: ${prompt.slice(0, 80)}...`);
-
-
-    let finalPrompt = prompt;
-    if (fileContent) {
-      finalPrompt = `
-You are CyberPinnacle AI, a cybersecurity assistant.
-The user uploaded a file:
-${fileContent}
-
-Now respond to their question:
-${prompt}
-`.trim();
-    }
-
-    logEvent("ai", `AI question received: ${prompt.slice(0, 80)}...`);
+    const { prompt } = req.body;
 
     const completion = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: finalPrompt }],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.4,
     });
 
     const aiText =
       completion.choices[0]?.message?.content ||
-      "I could not generate a response.";
+      "Unable to respond";
 
-    chatLogs.push({ id: Date.now(), prompt, timestamp: new Date().toISOString() });
-    stats.totalChats++;
-
-    res.json({ response: aiText });
-  } catch (err) {
-    console.error("AI Error:", err);
-    res.status(500).json({ error: "AI Server Error" });
-  }
-});
-
-// ===== ADMIN LOGS =====
-app.get("/ai/logs", (req, res) => {
-  res.json({ logs: chatLogs.slice(-200) });
-});
-
-// ===== RECON TOOLS =====
-
-// IP INFO
-app.post("/recon/ip-info", async (req, res) => {
-  try {
-    const { target } = req.body;
-    if (!target) return res.status(400).json({ error: "No IP provided" });
-
-    const resp = await fetch(`https://ipwho.is/${encodeURIComponent(target)}`);
-    const data = await resp.json();
-
-    if (!data || data.success === false) {
-      return res.status(400).json({ error: "Unable to fetch IP info" });
-    }
-
-    logEvent("recon", `IP lookup on ${target}`);
-    reconLogs.push({ id: Date.now(), type: "ip-info", input: target });
-    stats.totalReconIP++;
-
-    res.json({ result: data });
-  } catch (err) {
-    res.status(500).json({ error: "IP info lookup failed" });
-  }
-});
-
-// DNS LOOKUP
-app.post("/recon/dns-lookup", async (req, res) => {
-  try {
-    const { domain } = req.body;
-
-    logEvent("recon", `DNS lookup on ${domain}`);
-    reconLogs.push({ id: Date.now(), type: "dns-lookup", input: domain });
-    stats.totalReconDNS++;
-
-    const resp = await fetch(
-      `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`
-    );
-    const data = await resp.json();
-    res.json({ result: data });
-  } catch (err) {
-    res.status(500).json({ error: "DNS lookup failed" });
-  }
-});
-
-// WHOIS LOOKUP
-app.post("/recon/whois", async (req, res) => {
-  try {
-    const { domain } = req.body;
-
-    logEvent("recon", `WHOIS lookup on ${domain}`);
-    reconLogs.push({ id: Date.now(), type: "whois", input: domain });
-    stats.totalReconWHOIS++;
-
-    const resp = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`);
-    const data = await resp.json();
-    res.json({ result: data });
-  } catch (err) {
-    res.status(500).json({ error: "WHOIS lookup failed" });
-  }
-});
-
-// SUBDOMAIN AI
-app.post("/recon/subdomains-ai", async (req, res) => {
-  try {
-    const { domain } = req.body;
-
-    logEvent("recon", `Subdomain recon AI for ${domain}`);
-    reconLogs.push({ id: Date.now(), type: "subdomains-ai", input: domain });
-    stats.totalReconSubdomains++;
-
-    const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: `List subdomains for ${domain}` }],
+    chatLogs.push({
+      id: Date.now(),
+      prompt,
+      response: aiText,
+      timestamp: new Date().toISOString(),
     });
 
-    res.json({ result: completion.choices[0].message.content });
+    stats.totalChats += 1;
+
+    // 🔥 SEND EVENT TO SOC
+    logEvent("ai", `AI Query: "${prompt}"`);
+
+    return res.json({ response: aiText });
   } catch (err) {
-    res.status(500).json({ error: "Subdomain recon failed" });
+    console.error("AI Error:", err);
+    return res.status(500).json({ error: "AI Error" });
   }
 });
 
-// FORENSICS
-app.post("/forensics/analyze", async (req, res) => {
-  try {
-    const { filename, size, contentPreview } = req.body;
+// WebSocket upgrade handler
+const server = app.listen(process.env.PORT || 5000, () =>
+  console.log(`AI Server running with Groq on port ${process.env.PORT || 5000}`)
+);
 
-    logEvent("forensics", `Forensic analysis started on ${filename}`);
-
-    stats.totalForensicsAnalyses++;
-    forensicsLogs.push({ id: Date.now(), filename });
-
-    res.json({ threatLevel: "INFO", analysis: "Demo processing" });
-  } catch (err) {
-    res.status(500).json({ error: "Forensics failed" });
+server.on("upgrade", (req, socket, head) => {
+  if (req.url === "/stream") {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  } else {
+    socket.destroy();
   }
-});
-
-// ADMIN STATS
-app.get("/admin/stats", (req, res) => {
-  res.json({
-    stats,
-    lastChat: chatLogs.at(-1) || null,
-    lastRecon: reconLogs.at(-1) || null,
-    lastForensics: forensicsLogs.at(-1) || null,
-  });
 });
