@@ -136,4 +136,16 @@ function App() {
   );
 }
 
+import { ThemeProvider } from "./context/ThemeContext";
+
+function App() {
+  return (
+    <ThemeProvider>
+      {/* existing code */}
+    </ThemeProvider>
+  );
+}
+
 export default App;
+
+
