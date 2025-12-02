@@ -1,3 +1,4 @@
+// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -10,10 +11,16 @@ import About from "./pages/About";
 import Projects from "./pages/Projects";
 import Contact from "./pages/Contact";
 import Team from "./pages/Team";
+
+// Admin
 import AdminLogs from "./pages/AdminLogs";
 import AdminDashboard from "./pages/AdminDashboard";
 import SOCMonitor from "./pages/admin/SOCMonitor";
 import AdminUsers from "./pages/admin/AdminUsers";
+
+// Profile & Dashboard
+import Profile from "./pages/dashboard/profile";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 // Articles / Blog
 import Articles from "./pages/Articles";
@@ -32,15 +39,16 @@ import Reports from "./pages/ai/Reports";
 import CTF from "./pages/ctf/CTF";
 import ChallengeDetails from "./pages/ctf/ChallengeDetails";
 
-// Auth & Dashboard
+// Auth & Protection
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
-import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Leaderboard from "./pages/leaderboard/Leaderboard";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import VerifyOTP from "./pages/auth/VerifyOTP";
 import VerifyEmail from "./pages/auth/VerifyEmail";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+
+// Leaderboard
+import Leaderboard from "./pages/leaderboard/Leaderboard";
 
 // Training & Courses
 import Training from "./pages/training/Training";
@@ -63,18 +71,28 @@ function App() {
         <div className="flex-grow">
           <Routes>
 
-            {/* Main */}
+            {/* Main Pages */}
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/team" element={<Team />} />
 
+            {/* Profile (Protected) */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Articles */}
             <Route path="/articles" element={<Articles />} />
             <Route path="/articles/:slug" element={<ArticleTemplate />} />
 
-            {/* AI Platform */}
+            {/* AI Platform Nested */}
             <Route path="/ai" element={<AILayout />}>
               <Route index element={<CyberAI />} />
               <Route path="dashboard" element={<AIDashboardHome />} />
@@ -84,42 +102,42 @@ function App() {
               <Route path="reports" element={<Reports />} />
             </Route>
 
-            {/* Admin (Protected Only for Admin Users) */}
-<Route
-  path="/admin/logs"
-  element={
-    <ProtectedAdminRoute>
-      <AdminLogs />
-    </ProtectedAdminRoute>
-  }
-/>
+            {/* Admin Dashboard Protected */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              }
+            />
 
-<Route
-  path="/admin"
-  element={
-    <ProtectedAdminRoute>
-      <AdminDashboard />
-    </ProtectedAdminRoute>
-  }
-/>
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminUsers />
+                </ProtectedAdminRoute>
+              }
+            />
 
-<Route
-  path="/admin/soc"
-  element={
-    <ProtectedAdminRoute>
-      <SOCMonitor />
-    </ProtectedAdminRoute>
-  }
-/>
+            <Route
+              path="/admin/logs"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminLogs />
+                </ProtectedAdminRoute>
+              }
+            />
 
-<Route
-  path="/admin/users"
-  element={
-    <ProtectedAdminRoute>
-      <AdminUsers />
-    </ProtectedAdminRoute>
-  }
-/>
+            <Route
+              path="/admin/soc"
+              element={
+                <ProtectedAdminRoute>
+                  <SOCMonitor />
+                </ProtectedAdminRoute>
+              }
+            />
 
             {/* CTF */}
             <Route path="/ctf" element={<CTF />} />
@@ -138,9 +156,7 @@ function App() {
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/verify-otp" element={<VerifyOTP />} />
 
-
-
-            {/* Dashboard (User) */}
+            {/* Dashboard */}
             <Route
               path="/dashboard"
               element={

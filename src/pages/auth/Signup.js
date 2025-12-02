@@ -1,5 +1,6 @@
+// src/pages/auth/Signup.js
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserRecord } from "../../services/scoreService";
@@ -7,6 +8,7 @@ import { createUserRecord } from "../../services/scoreService";
 export default function Signup() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -17,20 +19,29 @@ export default function Signup() {
     setMessage("");
 
     try {
+      // Sign up with Firebase Auth
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
-      await createUserRecord(result.user.uid, email);
+      // Update Firebase user profile (adds displayName)
+      await updateProfile(result.user, {
+        displayName: username,
+      });
 
+      // Store full user record in firestore
+      await createUserRecord(result.user.uid, email, username);
+
+      // Send verification email
       await sendEmailVerification(result.user);
 
       setMessage("📩 Verification email sent! Check your inbox.");
       
-      await auth.signOut();
+      // log user out so they must verify before login
+      auth.signOut();
 
       navigate("/login");
     } catch (err) {
       console.error(err);
-      setError("Signup failed — account may already exist.");
+      setError("Signup failed — email may already exist.");
     }
   };
 
@@ -44,6 +55,15 @@ export default function Signup() {
       >
         {error && <p className="text-red-400 text-center">{error}</p>}
         {message && <p className="text-green-400 text-center">{message}</p>}
+
+        <input
+          type="text"
+          placeholder="Choose Username"
+          className="w-full px-4 py-2 bg-transparent border border-green-500 rounded-lg text-green-300"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
 
         <input
           type="email"

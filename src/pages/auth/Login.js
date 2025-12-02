@@ -1,6 +1,9 @@
 // src/pages/auth/Login.js
 import React, { useState } from "react";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserRecord } from "../../services/scoreService";
@@ -11,55 +14,52 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setInfo("");
+    setMessage("");
 
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
-
-      // refresh details
       await user.reload();
 
-      // email verification check
+      // Block login if email is unverified
       if (!user.emailVerified) {
         setError("⚠ Email not verified. Check your inbox.");
         return;
       }
 
-      // check role & status
+      // Check Firestore account status
       const ref = doc(db, "users", user.uid);
       const snap = await getDoc(ref);
 
       if (snap.exists() && snap.data().status === "restricted") {
-        setError("🚫 Your account has been restricted by admin.");
+        setError("🚫 Your account has been restricted by the admin.");
         return;
       }
 
-      // create record if new
+      // Create or update Firestore user
       await createUserRecord(user.uid, user.email);
 
-      // SUCCESS → redirect to home
-      navigate("/", { replace: true });
-
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       setError("Invalid email or password");
     }
   };
 
-  const handlePasswordReset = async () => {
+  const handleForgotPassword = async () => {
     if (!email) {
-      setError("Enter your email to reset password.");
+      setError("Enter your email first");
       return;
     }
+
     try {
       await sendPasswordResetEmail(auth, email);
-      setInfo("📩 Password reset email sent!");
+      setMessage("📩 Password reset link sent to your email.");
     } catch (err) {
       console.error(err);
       setError("Failed to send reset email");
@@ -70,10 +70,12 @@ export default function Login() {
     <div className="min-h-screen bg-black text-green-400 flex flex-col items-center justify-center px-8 py-16">
       <h1 className="text-4xl font-bold mb-10">Welcome Back</h1>
 
-      <form onSubmit={handleLogin} className="w-full max-w-md bg-gray-900 p-8 rounded-xl border border-green-500 space-y-4">
-
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md bg-gray-900 p-8 rounded-xl border border-green-500 space-y-4"
+      >
         {error && <p className="text-red-400 text-center">{error}</p>}
-        {info && <p className="text-green-400 text-center">{info}</p>}
+        {message && <p className="text-green-300 text-center">{message}</p>}
 
         <input
           type="email"
@@ -93,11 +95,17 @@ export default function Login() {
           required
         />
 
-        <button type="submit" className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-2 rounded-lg transition-transform transform hover:scale-105">
+        <button
+          type="submit"
+          className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-2 rounded-lg transition-transform transform hover:scale-105"
+        >
           Login
         </button>
 
-        <p onClick={handlePasswordReset} className="text-sm text-center text-green-300 hover:text-green-100 cursor-pointer">
+        <p
+          onClick={handleForgotPassword}
+          className="text-sm text-green-300 underline cursor-pointer hover:text-green-200 text-center"
+        >
           Forgot password?
         </p>
 

@@ -2,18 +2,19 @@
 import { doc, setDoc, updateDoc, getDoc, increment } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
-// Create user record if not exists
-export async function createUserRecord(uid, email) {
+// Create user record if not exists (now includes username)
+export async function createUserRecord(uid, email, username) {
   const userRef = doc(db, "users", uid);
   const snap = await getDoc(userRef);
 
   if (!snap.exists()) {
     await setDoc(userRef, {
       email: email || null,
+      username: username || null,  // NEW FIELD
       score: 0,
       badges: [],
       completed: [],
-      role: "user",        // default role
+      role: "user",        // default access
       status: "active",    // can be 'active' or 'restricted'
       createdAt: new Date()
     });
