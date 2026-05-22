@@ -44,24 +44,24 @@ export default function Contact() {
 
           <div className="flex space-x-6 text-2xl">
 
-            {/* Safe placeholder links (NO ESLINT ERROR) */}
-            <a href="javascript:void(0)" className="hover:text-green-400">
+            {/* SAFE: no href="#" or javascript:void(0) */}
+            <a href="https://facebook.com" target="_blank" rel="noreferrer">
               <FaFacebook />
             </a>
 
-            <a href="javascript:void(0)" className="hover:text-green-400">
+            <a href="https://instagram.com" target="_blank" rel="noreferrer">
               <FaInstagram />
             </a>
 
-            <a href="javascript:void(0)" className="hover:text-green-400">
+            <a href="https://twitter.com" target="_blank" rel="noreferrer">
               <FaTwitter />
             </a>
 
-            <a href="javascript:void(0)" className="hover:text-green-400">
+            <a href="https://tiktok.com" target="_blank" rel="noreferrer">
               <FaTiktok />
             </a>
 
-            <a href="javascript:void(0)" className="hover:text-green-400">
+            <a href="https://youtube.com" target="_blank" rel="noreferrer">
               <FaYoutube />
             </a>
 
