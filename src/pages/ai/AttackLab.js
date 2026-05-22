@@ -154,7 +154,7 @@ const TEMPLATE_TEXT = {
     "  # TODO:",
     "  #   - Replace this with your own logic, e.g. reading files,",
     "  #     parsing data, or simulating benign requests.",
-    "  puts \"Running lab demo for \#{target} (port: \#{port})\"",
+    "  puts \"Running lab demo for #{target} (port: #{port})\"",
     "end",
     "",
     "run_lab_demo(target, port)",
