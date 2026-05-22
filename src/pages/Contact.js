@@ -40,11 +40,25 @@ export default function Contact() {
           {/* Social Media */}
           <h3 className="text-xl font-semibold mt-8 mb-4 text-green-300">Follow Us</h3>
           <div className="flex space-x-6 text-2xl">
-            <a href="#" className="hover:text-green-400"><FaFacebook /></a>
-            <a href="#" className="hover:text-green-400"><FaInstagram /></a>
-            <a href="#" className="hover:text-green-400"><FaTwitter /></a>
-            <a href="#" className="hover:text-green-400"><FaTiktok /></a>
-            <a href="#" className="hover:text-green-400"><FaYoutube /></a>
+            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-green-400">
+  <FaFacebook />
+</a>
+
+<a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-green-400">
+  <FaInstagram />
+</a>
+
+<a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-green-400">
+  <FaTwitter />
+</a>
+
+<a href="https://tiktok.com" target="_blank" rel="noreferrer" className="hover:text-green-400">
+  <FaTiktok />
+</a>
+
+<a href="https://youtube.com" target="_blank" rel="noreferrer" className="hover:text-green-400">
+  <FaYoutube />
+</a>
           </div>
         </div>
 
