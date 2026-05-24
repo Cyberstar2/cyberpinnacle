@@ -14,7 +14,8 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://cyberpinnacle.vercel.app",
+    "https://thecyberpinnacle.com",
+    "https://www.thecyberpinnacle.com",
   ],
   credentials: true,
 }));
