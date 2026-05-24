@@ -74,46 +74,102 @@ export default function Home() {
         {/* Focus Areas */}
         <div className="mt-24">
 
-          <h2 className="text-3xl font-bold mb-10">
-            What We Offer
-          </h2>
+          {/* What We Offer */}
+<div className="mt-24">
 
-          <div className="grid md:grid-cols-3 gap-8">
+  <h2 className="text-3xl font-bold mb-4">
+    What We Offer
+  </h2>
 
-            <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
-              <h3 className="text-2xl font-semibold mb-4">
-                Ethical Hacking
-              </h3>
+  <p className="text-green-300 max-w-3xl mx-auto mb-12 leading-8">
+    Cyber Pinnacle delivers comprehensive cybersecurity education,
+    technical training, security awareness, and innovation-driven
+    programs designed to prepare individuals and organizations for
+    today’s evolving digital threats and opportunities.
+  </p>
 
-              {/* Ethical Hacking */}
-<p className="text-green-300 leading-relaxed">
-  Develop practical offensive security skills including
-  penetration testing, vulnerability assessment,
-  reconnaissance, exploitation methodologies,
-  and ethical hacking techniques used in real-world environments.
-</p>
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-{/* Cybersecurity Training */}
-<p className="text-green-300 leading-relaxed">
-  Access structured cybersecurity learning programs,
-  hands-on labs, workshops, and technical mentorship
-  designed for students, beginners, and aspiring professionals.
-</p>
+    {/* Cybersecurity Training */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Cybersecurity Training
+      </h3>
 
-{/* Security Research */}
-<p className="text-green-300 leading-relaxed">
-  Explore emerging cyber threats, threat intelligence,
-  defensive security strategies, digital investigations,
-  and modern cybersecurity technologies shaping the future of security.
-</p>
-                          </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
+      <p className="text-green-300 leading-relaxed">
+        Structured hands-on training programs covering foundational
+        and advanced cybersecurity concepts for students,
+        professionals, and aspiring security experts.
+      </p>
     </div>
+
+    {/* Ethical Hacking */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Ethical Hacking & Penetration Testing
+      </h3>
+
+      <p className="text-green-300 leading-relaxed">
+        Learn offensive security techniques including reconnaissance,
+        vulnerability assessment, exploitation methodologies,
+        web security testing, and real-world penetration testing practices.
+      </p>
+    </div>
+
+    {/* Security Awareness */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Security Awareness
+      </h3>
+
+      <p className="text-green-300 leading-relaxed">
+        Promote digital safety through cybersecurity awareness programs,
+        workshops, seminars, and educational campaigns for schools,
+        organizations, and communities.
+      </p>
+    </div>
+
+    {/* Digital Forensics */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Digital Forensics
+      </h3>
+
+      <p className="text-green-300 leading-relaxed">
+        Explore cyber investigations, evidence analysis,
+        incident response methodologies, and forensic techniques
+        used in modern cybersecurity operations.
+      </p>
+    </div>
+
+    {/* Research & Innovation */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Security Research & Innovation
+      </h3>
+
+      <p className="text-green-300 leading-relaxed">
+        Conduct research on emerging cyber threats,
+        defensive technologies, threat intelligence,
+        and innovative solutions shaping the future of cybersecurity.
+      </p>
+    </div>
+
+    {/* Mentorship */}
+    <div className="border border-green-500/10 bg-[#07110d] rounded-xl p-6">
+      <h3 className="text-2xl font-semibold mb-4">
+        Mentorship & Community
+      </h3>
+
+      <p className="text-green-300 leading-relaxed">
+        Build a strong cybersecurity community through mentorship,
+        collaborative learning, networking opportunities,
+        technical events, and career development initiatives.
+      </p>
+    </div>
+
+  </div>
+
+</div>
   );
 }
