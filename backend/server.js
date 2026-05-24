@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { WebSocketServer } from "ws";
 
 dotenv.config();
@@ -23,14 +23,16 @@ app.use(cors({
 app.use(express.json({ limit: "5mb" }));
 
 /* =======================
-   GEMINI SETUP
+   OPENAI SETUP
 ======================= */
-if (!process.env.GEMINI_API_KEY) {
-  console.error("❌ Missing GEMINI_API_KEY");
+if (!process.env.OPENAI_API_KEY) {
+  console.error("❌ Missing OPENAI_API_KEY");
   process.exit(1);
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 /* =======================
    IN-MEMORY DATA
@@ -70,7 +72,7 @@ app.get("/", (req, res) => {
 });
 
 /* =======================
-   AI CHAT ENDPOINT (FINAL FIXED)
+   AI CHAT ENDPOINT (OPENAI)
 ======================= */
 app.post("/ai", async (req, res) => {
   try {
@@ -87,32 +89,40 @@ app.post("/ai", async (req, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("🧠 AI PROMPT:", prompt);
+    console.log("🧠 PROMPT:", prompt);
 
-    // ✅ FIXED MODEL (WORKING VERSION)
-    const model = genAI.getGenerativeModel({
-      model: "models/gemini-1.5-flash",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are CyberPinnacle AI, a cybersecurity assistant specialized in ethical hacking, penetration testing, networking, digital forensics, and cybersecurity education.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = response.choices[0].message.content;
 
-    console.log("🤖 AI RESPONSE:", text);
+    console.log("🤖 RESPONSE:", text);
 
     broadcast({
       type: "AI_CHAT",
-      message: "Gemini AI used",
+      message: "OpenAI used",
       timestamp: new Date().toISOString(),
     });
 
     return res.json({ response: text });
 
   } catch (error) {
-    console.error("❌ AI ERROR:", error);
+    console.error("❌ OpenAI ERROR:", error);
 
     return res.status(500).json({
-      response: "⚠️ AI service failed. Check API key or quota.",
+      response: "⚠️ AI temporarily unavailable. Try again later.",
       error: error.message,
     });
   }
