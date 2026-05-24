@@ -70,7 +70,7 @@ app.get("/", (req, res) => {
 });
 
 /* =======================
-   AI CHAT ENDPOINT (FIXED + STABLE)
+   AI CHAT ENDPOINT (FINAL FIXED)
 ======================= */
 app.post("/ai", async (req, res) => {
   try {
@@ -89,21 +89,12 @@ app.post("/ai", async (req, res) => {
 
     console.log("🧠 AI PROMPT:", prompt);
 
+    // ✅ FIXED MODEL (WORKING VERSION)
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "models/gemini-1.5-flash",
     });
 
-    let result;
-    try {
-      result = await model.generateContent(prompt);
-    } catch (apiError) {
-      console.error("❌ Gemini API Error:", apiError);
-
-      return res.json({
-        response: "⚠️ AI service is currently unavailable. Please try again shortly.",
-      });
-    }
-
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
@@ -118,10 +109,11 @@ app.post("/ai", async (req, res) => {
     return res.json({ response: text });
 
   } catch (error) {
-    console.error("❌ AI ROUTE ERROR:", error);
+    console.error("❌ AI ERROR:", error);
 
     return res.status(500).json({
-      error: "AI generation failed",
+      response: "⚠️ AI service failed. Check API key or quota.",
+      error: error.message,
     });
   }
 });
@@ -171,19 +163,6 @@ app.post("/send-otp", (req, res) => {
    SERVER START
 ======================= */
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-});
-
-/* =======================
-   WS UPGRADE
-======================= */
-server.on("upgrade", (req, socket, head) => {
-  if (req.url === "/stream") {
-    wss.handleUpgrade(req, socket, head, ws => {
-      wss.emit("connection", ws, req);
-    });
-  } else {
-    socket.destroy();
-  }
 });
