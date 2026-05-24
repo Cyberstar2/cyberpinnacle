@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 import { WebSocketServer } from "ws";
 
 dotenv.config();
@@ -23,15 +23,15 @@ app.use(cors({
 app.use(express.json({ limit: "5mb" }));
 
 /* =======================
-   OPENAI SETUP
+   GROQ SETUP (FREE AI)
 ======================= */
-if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ Missing OPENAI_API_KEY");
+if (!process.env.GROQ_API_KEY) {
+  console.error("❌ Missing GROQ_API_KEY");
   process.exit(1);
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 /* =======================
@@ -68,11 +68,11 @@ const broadcast = (payload) => {
    HEALTH CHECK
 ======================= */
 app.get("/", (req, res) => {
-  res.send("🚀 CyberPinnacle AI Backend Online");
+  res.send("🚀 CyberPinnacle AI Backend Online (GROQ MODE)");
 });
 
 /* =======================
-   AI CHAT ENDPOINT (OPENAI)
+   AI CHAT ENDPOINT (GROQ)
 ======================= */
 app.post("/ai", async (req, res) => {
   try {
@@ -91,13 +91,13 @@ app.post("/ai", async (req, res) => {
 
     console.log("🧠 PROMPT:", prompt);
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.1-70b-versatile",
       messages: [
         {
           role: "system",
           content:
-            "You are CyberPinnacle AI, a cybersecurity assistant specialized in ethical hacking, penetration testing, networking, digital forensics, and cybersecurity education.",
+            "You are CyberPinnacle AI, a cybersecurity assistant specialized in ethical hacking, penetration testing, digital forensics, networking, SOC analysis, and cybersecurity education.",
         },
         {
           role: "user",
@@ -106,23 +106,24 @@ app.post("/ai", async (req, res) => {
       ],
     });
 
-    const text = response.choices[0].message.content;
+    const text =
+      completion.choices[0]?.message?.content || "No response generated.";
 
     console.log("🤖 RESPONSE:", text);
 
     broadcast({
       type: "AI_CHAT",
-      message: "OpenAI used",
+      message: "Groq AI used",
       timestamp: new Date().toISOString(),
     });
 
     return res.json({ response: text });
 
   } catch (error) {
-    console.error("❌ OpenAI ERROR:", error);
+    console.error("❌ GROQ ERROR:", error);
 
     return res.status(500).json({
-      response: "⚠️ AI temporarily unavailable. Try again later.",
+      response: "⚠️ AI temporarily unavailable.",
       error: error.message,
     });
   }
