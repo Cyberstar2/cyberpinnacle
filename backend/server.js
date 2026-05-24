@@ -69,23 +69,44 @@ app.get("/", (req, res) => {
 });
 
 /* =======================
-   AI CHAT ENDPOINT
+   AI CHAT ENDPOINT (FIXED + STABLE)
 ======================= */
 app.post("/ai", async (req, res) => {
   try {
     const { prompt } = req.body;
+
     if (!prompt) {
       return res.status(400).json({ error: "Prompt required" });
     }
 
     adminStats.totalChats++;
+
     lastChat = {
       prompt,
       timestamp: new Date().toISOString(),
     };
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent(prompt);
+    console.log("🧠 AI PROMPT:", prompt);
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
+
+    let result;
+    try {
+      result = await model.generateContent(prompt);
+    } catch (apiError) {
+      console.error("❌ Gemini API Error:", apiError);
+
+      return res.json({
+        response: "⚠️ AI service is currently unavailable. Please try again shortly.",
+      });
+    }
+
+    const response = await result.response;
+    const text = response.text();
+
+    console.log("🤖 AI RESPONSE:", text);
 
     broadcast({
       type: "AI_CHAT",
@@ -93,10 +114,14 @@ app.post("/ai", async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    res.json({ response: result.response.text() });
+    return res.json({ response: text });
+
   } catch (error) {
-    console.error("❌ Gemini Error:", error);
-    res.status(500).json({ error: "AI generation failed" });
+    console.error("❌ AI ROUTE ERROR:", error);
+
+    return res.status(500).json({
+      error: "AI generation failed",
+    });
   }
 });
 
