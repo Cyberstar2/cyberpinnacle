@@ -5,7 +5,7 @@ import {
   FaTwitter,
   FaTiktok,
   FaYoutube,
-  FaLinkedin
+  FaLinkedin,
   FaPhone,
   FaEnvelope,
 } from "react-icons/fa";
@@ -27,12 +27,12 @@ export default function Contact() {
           </h2>
 
           <div className="space-y-4">
-            <p className="flex items-center space-x-3 text-lg">
+            <p className="flex items-center gap-3 text-lg">
               <FaEnvelope className="text-green-400" />
               <span>cyberpinnacle7@gmail.com</span>
             </p>
 
-            <p className="flex items-center space-x-3 text-lg">
+            <p className="flex items-center gap-3 text-lg">
               <FaPhone className="text-green-400" />
               <span>+234 913 481 2608</span>
             </p>
@@ -45,7 +45,6 @@ export default function Contact() {
 
           <div className="flex space-x-6 text-2xl">
 
-            {/* SAFE: no href="#" or javascript:void(0) */}
             <a href="https://facebook.com/profile.php?id=61582365811291" target="_blank" rel="noreferrer">
               <FaFacebook />
             </a>
@@ -66,7 +65,7 @@ export default function Contact() {
               <FaYoutube />
             </a>
 
-            <a href="https://Linkedin.com/company/the-cyberpinnacle" target="_blank" rel="noreferrer">
+            <a href="https://linkedin.com/company/the-cyberpinnacle" target="_blank" rel="noreferrer">
               <FaLinkedin />
             </a>
           </div>
