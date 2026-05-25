@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getScore } from "../../services/scoreService";
-import { challengesData } from "./challengesData";
-import { isUnlocked } from "./engine";
+import { challengesData } from "./challengesData.js";
+import { isUnlocked } from "./engine.j";
 
 export default function CTF() {
   const { user } = useAuth();
