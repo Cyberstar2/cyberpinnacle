@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getScore } from "../../services/scoreService";
 import { challengesData } from "./challengesData.js";
-import { isUnlocked } from "./engine.j";
+import { isUnlocked } from "./engine.js";
 
 export default function CTF() {
   const { user } = useAuth();
