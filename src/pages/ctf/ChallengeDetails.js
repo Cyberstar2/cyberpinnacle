@@ -11,6 +11,9 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+/* =========================
+   SAFE CHALLENGE DATA
+========================= */
 const correctFlags = {
   "Intro to CTF": "CPCTF{welcome123}",
   "OSINT: Find the Email": "CPCTF{osint_master}",
@@ -31,81 +34,81 @@ const challengeHints = {
 
 export default function ChallengeDetails() {
   const { title } = useParams();
-
   const location = useLocation();
 
   const challenge = location.state;
 
   const [flag, setFlag] = useState("");
-
   const [status, setStatus] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const [message, setMessage] = useState("");
 
   const handleSubmit = async () => {
     if (!flag.trim()) return;
 
-    setLoading(true);
+    const uid = auth.currentUser?.uid;
+    if (!uid) {
+      setStatus("wrong");
+      setMessage("You must be logged in.");
+      return;
+    }
 
+    setLoading(true);
     setMessage("");
 
     try {
-      if (flag.trim() === correctFlags[title]) {
-        const result = await addScore(
-          auth.currentUser.uid,
-          challengePoints[title],
-          title
-        );
+      const challengeTitle = challenge?.title || decodeURIComponent(title);
 
-        // Prevent duplicate scoring
-        if (!result.success) {
-          setStatus("already");
+      const correctFlag = correctFlags[challengeTitle];
+      const points = challengePoints[challengeTitle];
 
-          setMessage("You already solved this challenge.");
+      if (!correctFlag) {
+        setStatus("wrong");
+        setMessage("Challenge data not found.");
+        setLoading(false);
+        return;
+      }
 
-          setLoading(false);
+      /* =========================
+         FLAG CHECK
+      ========================= */
+      if (flag.trim() === correctFlag) {
+        await addScore(uid, points, challengeTitle);
 
-          return;
-        }
-
-        // Award badges
-        if (challengePoints[title] === 50) {
+        // BADGES
+        if (points === 50) {
           await awardBadge("First Blood");
         }
 
-        if (challengePoints[title] === 75) {
+        if (points === 75) {
           await awardBadge("Recon Expert");
         }
 
         setStatus("correct");
-
-        setMessage(
-          `+${challengePoints[title]} XP earned • Rank: ${result.rank}`
-        );
+        setMessage(`+${points} XP earned 🎯`);
       } else {
         setStatus("wrong");
-
-        setMessage("Incorrect flag. Keep digging.");
+        setMessage("Incorrect flag. Try again.");
       }
+
     } catch (err) {
       console.error(err);
-
       setStatus("wrong");
-
       setMessage("Something went wrong.");
     }
 
     setLoading(false);
   };
 
+  const challengeTitle = challenge?.title || decodeURIComponent(title);
+
   return (
     <div className="min-h-screen bg-black text-green-400 pt-28 px-6 pb-16">
       <div className="max-w-4xl mx-auto">
+
         {/* MAIN CONTAINER */}
         <div className="border border-green-700 rounded-3xl bg-[#050b07] overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.15)]">
-          
+
           {/* HEADER */}
           <div className="border-b border-green-800 bg-gradient-to-r from-green-950/40 to-black px-6 py-4">
             <div className="flex items-center gap-3">
@@ -113,7 +116,7 @@ export default function ChallengeDetails() {
 
               <div>
                 <h1 className="text-3xl font-extrabold">
-                  {title}
+                  {challengeTitle}
                 </h1>
 
                 <p className="text-green-500 text-sm">
@@ -125,7 +128,7 @@ export default function ChallengeDetails() {
 
           {/* BODY */}
           <div className="p-6">
-            
+
             {/* DESCRIPTION */}
             <div className="mb-6">
               <h2 className="text-lg font-bold mb-2 text-green-300">
@@ -146,15 +149,15 @@ export default function ChallengeDetails() {
               </div>
 
               <p className="text-yellow-200 text-sm">
-                {challengeHints[title] ||
+                {challengeHints[challengeTitle] ||
                   "No hint available for this challenge."}
               </p>
             </div>
 
             {/* TERMINAL */}
             <div className="border border-green-800 rounded-xl bg-black overflow-hidden">
-              
-              {/* TERMINAL HEADER */}
+
+              {/* HEADER */}
               <div className="flex items-center gap-2 px-4 py-2 border-b border-green-800 bg-green-950/20">
                 <span className="w-2 h-2 rounded-full bg-red-500" />
                 <span className="w-2 h-2 rounded-full bg-yellow-500" />
@@ -165,9 +168,9 @@ export default function ChallengeDetails() {
                 </span>
               </div>
 
-              {/* TERMINAL BODY */}
+              {/* BODY */}
               <div className="p-4">
-                
+
                 <div className="flex items-center gap-2 text-sm text-green-500 mb-2">
                   <FaFlag />
                   <span>Enter captured flag below:</span>
@@ -195,28 +198,14 @@ export default function ChallengeDetails() {
                       <FaCheckCircle />
                       <span>Flag Accepted</span>
                     </div>
-
-                    <p className="text-sm">
-                      {message}
-                    </p>
-                  </div>
-                )}
-
-                {/* DUPLICATE */}
-                {status === "already" && (
-                  <div className="mt-5 border border-yellow-700 bg-yellow-900/10 rounded-lg p-4 text-yellow-300">
-                    <p className="font-bold">
-                      {message}
-                    </p>
+                    <p className="text-sm">{message}</p>
                   </div>
                 )}
 
                 {/* ERROR */}
                 {status === "wrong" && (
                   <div className="mt-5 border border-red-700 bg-red-900/10 rounded-lg p-4 text-red-300">
-                    <p className="font-bold">
-                      {message}
-                    </p>
+                    <p className="font-bold">{message}</p>
                   </div>
                 )}
               </div>
@@ -224,9 +213,9 @@ export default function ChallengeDetails() {
 
             {/* FOOTER */}
             <div className="mt-6 text-xs text-green-600 border-t border-green-900 pt-4">
-              CyberPinnacle CTF Arena is built for ethical cybersecurity
-              education and authorized skills development only.
+              CyberPinnacle CTF Arena is built for ethical cybersecurity education and authorized skills development only.
             </div>
+
           </div>
         </div>
       </div>
