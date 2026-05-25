@@ -5,6 +5,7 @@ import {
   FaTwitter,
   FaTiktok,
   FaYoutube,
+  FaLinkedin
   FaPhone,
   FaEnvelope,
 } from "react-icons/fa";
@@ -45,26 +46,29 @@ export default function Contact() {
           <div className="flex space-x-6 text-2xl">
 
             {/* SAFE: no href="#" or javascript:void(0) */}
-            <a href="https://facebook.com" target="_blank" rel="noreferrer">
+            <a href="https://facebook.com/profile.php?id=61582365811291" target="_blank" rel="noreferrer">
               <FaFacebook />
             </a>
 
-            <a href="https://instagram.com" target="_blank" rel="noreferrer">
+            <a href="https://instagram.com/cyber_pinnacle" target="_blank" rel="noreferrer">
               <FaInstagram />
             </a>
 
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">
+            <a href="https://x.com/cyber_pinnacle" target="_blank" rel="noreferrer">
               <FaTwitter />
             </a>
 
-            <a href="https://tiktok.com" target="_blank" rel="noreferrer">
+            <a href="https://tiktok.com/@cyber_pinnacle" target="_blank" rel="noreferrer">
               <FaTiktok />
             </a>
 
-            <a href="https://youtube.com" target="_blank" rel="noreferrer">
+            <a href="https://youtube.com/@cyber_pinnacle" target="_blank" rel="noreferrer">
               <FaYoutube />
             </a>
 
+            <a href="https://Linkedin.com/company/the-cyberpinnacle" target="_blank" rel="noreferrer">
+              <FaLinkedin />
+            </a>
           </div>
         </div>
 
